@@ -1,0 +1,76 @@
+# DUO – unsigned iPhone build, same approach as amy-ios-build.
+#
+# - Manual builds only: there is deliberately no automatic trigger section.
+#   Start a build from the Codemagic app or website.
+# - Unsigned: no certificates, profiles or Apple ID here. A.M.Y Loader signs
+#   the IPA on Con's PC with his free Apple ID.
+# - Nothing is published anywhere; only the IPA and the build log are kept.
+# - Billing must stay off on the Codemagic account (500 free macOS minutes a month).
+
+workflows:
+  duo-unsigned:
+    name: DUO unsigned IPA
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+      vars:
+        EXPO_NO_TELEMETRY: "1"
+        HOMEBREW_NO_ANALYTICS: "1"
+        HOMEBREW_NO_AUTO_UPDATE: "1"
+    cache:
+      cache_paths:
+        - $HOME/.npm
+        - $HOME/Library/Caches/CocoaPods
+    scripts:
+      - name: Tool versions
+        script: |
+          xcodebuild -version
+          node -v
+          pod --version
+
+      - name: Install JavaScript packages
+        script: npm ci
+
+      - name: Typecheck
+        script: npx tsc --noEmit
+
+      - name: Generate the iOS project from app.json (ios/ is never committed)
+        script: CI=1 npx expo prebuild --platform ios --clean --no-install
+
+      - name: Stamp the build number (A.M.Y Loader compares version, then build)
+        script: |
+          set -e
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" ios/DUO/Info.plist
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" ios/DUO/Info.plist
+          echo "build $BUILD_NUMBER"
+
+      - name: Install CocoaPods
+        script: cd ios && pod install
+
+      - name: Build (Release, device, unsigned)
+        script: |
+          set -o pipefail
+          xcodebuild build -workspace ios/DUO.xcworkspace -scheme DUO -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            > build.log 2>&1 || true
+          grep -n -E -B2 -A8 "(error|fatal error):" build.log | head -300 || true
+          grep -q "\*\* BUILD SUCCEEDED \*\*" build.log
+
+      - name: Package the IPA and check what it asks for
+        script: |
+          set -e
+          APP=build/Build/Products/Release-iphoneos/DUO.app
+          test -f "$APP/main.jsbundle" || { echo "JavaScript bundle missing from the app"; exit 1; }
+          for key in NSHealthShareUsageDescription NSLocationAlwaysAndWhenInUseUsageDescription UIBackgroundModes; do
+            /usr/libexec/PlistBuddy -c "Print :$key" "$APP/Info.plist" > /dev/null || { echo "Info.plist is missing $key"; exit 1; }
+          done
+          rm -rf Payload && mkdir Payload && cp -R "$APP" Payload/
+          zip -qry DUO.ipa Payload
+          ls -lh DUO.ipa
+    artifacts:
+      - DUO.ipa
+      - build.log

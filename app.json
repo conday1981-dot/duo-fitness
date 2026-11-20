@@ -1,25 +1,38 @@
 {
   "expo": {
-    "name": "duo-fitness",
+    "name": "DUO",
     "slug": "duo-fitness",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "uk.con.duo",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "deploymentTarget": "16.1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    }
+    "plugins": [
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "DUO reads your weight and body readings, for example from your Fitdays scale, to track your goals. This stays on your phone.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "DUO uses your location to measure distance and pace on walks and runs.",
+          "locationAlwaysAndWhenInUsePermission": "DUO keeps measuring your walk or run while the screen is locked.",
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
+      "expo-asset"
+    ]
   }
 }

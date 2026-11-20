@@ -1,3 +1,11 @@
+# DUO – project notes (read first)
+
+- Private couples fitness app for Con and his wife. The approved design is `docs/design.md`; follow it.
+- Separate project: shares no code, data or runtime with ORION, Bloom, Forge or anything else.
+- iPhone builds run on **Codemagic** (`codemagic.yaml`, manual trigger, unsigned IPA), not EAS. A.M.Y Loader on Con's PC signs and installs the IPA with a free Apple ID. Never add certificates, profiles or Apple IDs to this repo.
+- Local-first: no analytics, no cloud services beyond the end-to-end encrypted sync relay in the design doc.
+- The current app is the phase 0 check app (`App.tsx`). Phase 1 moves to Expo Router under `src/app/`.
+
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 
 ## Expo has changed — do not trust your training data
