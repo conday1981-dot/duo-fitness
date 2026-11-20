@@ -29,6 +29,10 @@ It uses about 15–25 of the 500 free macOS minutes a month. Keep billing off.
 
 A.M.Y Loader's signing engine (isideload 0.5.2) uses only the entitlements in the free provisioning profile, and the only capability it switches on is increased memory. HealthKit is allowed for free Apple IDs, but it has to be enabled for the app first. Until A.M.Y Loader does that, check 2 is expected to fail with an entitlement error, and the report will confirm it. Checks 1, 3 and 4 don't depend on this.
 
+## Browser preview (no signing)
+
+`npm run preview:web` exports the app for the browser into `dist/`, with relative paths so it can be hosted anywhere (a private claude.ai artifact, for example). Phone-only features have browser stand-ins in `*.web.ts` files (for example `src/checks.web.ts`), which return clearly marked SIMULATED results. Use the preview for screens and flow. Use the phone for Health, GPS and text recognition.
+
 ## Develop
 
 ```sh
