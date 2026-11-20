@@ -189,14 +189,16 @@ In the Health app → Browse → Body Measurements, see which readings list Fitd
 
 - **Stack:** React Native (Expo, prebuild / bare workflow), TypeScript, local database with expo-sqlite (with encryption for the couples tables), libsodium for sync encryption.
 - **Native modules:** HealthKit, background location, text recognition, Live Activities, Keychain.
-- **Build:** a GitHub Actions macOS runner runs `expo prebuild`, pod install, then `xcodebuild` with code signing off, and packages an unsigned `.ipa`. On a private repo, about 200 macOS minutes a month are free (roughly 15–20 builds). No Mac and no paid Apple account are needed.
-- **Install:** the IPA goes to A.M.Y loader, which signs it with a free Apple ID and installs it. Open item: confirm whether A.M.Y loader expects a signed or an unsigned IPA.
+- **Build:** Codemagic (`codemagic.yaml`, the same approach as amy-ios-build). A manually started `mac_mini_m2` build runs `expo prebuild`, pod install, then `xcodebuild` with code signing off, and packages an unsigned `.ipa`. A build uses about 15–25 of the 500 free macOS minutes a month. Billing stays off. No Mac and no paid Apple account are needed.
+- **Install:** drag the IPA onto A.M.Y Loader (Con's iloader fork), which signs it with a free Apple ID, installs it, and re-signs it over Wi-Fi before the 7 days run out. **Confirmed: it takes an unsigned IPA.**
+- **HealthKit gap (found 20 Nov 2026):** A.M.Y Loader's signing engine (isideload 0.5.2) uses only the entitlements in the free provisioning profile. The only capability it switches on for the app is increased memory. HealthKit is allowed for free Apple IDs, but it must be enabled for the app before the profile is downloaded. Until A.M.Y Loader does that, Health import won't work. Fix: a small change in A.M.Y Loader, the HealthKit counterpart of its increased-memory request. The phase 0 check app confirms it on the phone.
 - **Testing in the Linux environment:** unit tests for the data model, sync, crypto, parsers and calculations, plus a web/simulator build of the UI where possible.
 
 ### Risks
 | Risk | Effect | Mitigation |
 |---|---|---|
-| Free Apple ID limits (7-day expiry, few active apps, few app IDs per week) | App stops opening after 7 days. Each extension (Live Activity widget) uses another app ID | A.M.Y loader refreshes installs. Keep extensions to a minimum |
+| Free Apple ID limits (7-day expiry, few active apps, few app IDs per week) | App stops opening after 7 days. Each extension (Live Activity widget) uses another app ID | A.M.Y Loader re-signs over Wi-Fi before expiry. Keep extensions to a minimum |
+| A.M.Y Loader doesn't enable HealthKit | No automatic readings, steps or sleep | Fix in A.M.Y Loader (section 12). Screenshot and manual import work without it |
 | HealthKit or other capabilities unavailable with free signing | No automatic readings, steps or sleep | Phase 0 check. Fallback: screenshot and manual import only |
 | Fitdays changes its report layout | Screenshot import fails | Versioned parser, falls back to manual entry |
 | iOS limits background sync | Partner sees updates late | Sync when the app opens. Show "last synced" time |
@@ -208,6 +210,6 @@ In the Health app → Browse → Body Measurements, see which readings list Fitd
 
 Approved by Con on 20 Nov 2026, with the theme change above.
 
-1. **A.M.Y loader input (signed or unsigned IPA): unknown.** Phase 0 settles it. Build an unsigned IPA first, since it works with every sideloading tool, then try installing it through A.M.Y loader. If the loader needs a signed IPA, add a signing step to the build workflow.
-2. **Which readings Fitdays writes to Apple Health: unknown.** Phase 0 settles it with a one-screen test that lists every body reading in Health and its source app. The screenshot import covers whatever Health doesn't provide.
+1. **A.M.Y Loader input: resolved.** It takes an unsigned IPA.
+2. **Which readings Fitdays writes to Apple Health: unknown.** Check 2 of the phase 0 app answers it, once the HealthKit gap above is fixed.
 3. Working name: still a placeholder.
