@@ -4,7 +4,9 @@
 - Separate project: shares no code, data or runtime with ORION, Bloom, Forge or anything else.
 - iPhone builds run on **Codemagic** (`codemagic.yaml`, manual trigger, unsigned IPA), not EAS. A.M.Y Loader on Con's PC signs and installs the IPA with a free Apple ID. Never add certificates, profiles or Apple IDs to this repo.
 - Local-first: no analytics, no cloud services beyond the end-to-end encrypted sync relay in the design doc.
-- The current app is the phase 0 check app (`App.tsx`). Phase 1 moves to Expo Router under `src/app/`.
+- v0.1 is web-first (installable home-screen app on Cloudflare) and builds for iPhone from the same code. Navigation is the small custom navigator in `src/ui/nav.tsx`, not Expo Router (ignore the Expo Router section below). Phone-only APIs live behind `src/platform/device.ts` / `device.web.ts`.
+- Data: `src/core/store.tsx` (on-device). Sync: `src/domain/sync.ts` + `worker/` (Cloudflare Worker + D1 `duo-relay`, encrypted blobs only).
+- Checks before any push: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build:web`.
 
 This is an Expo/React Native mobile application. Prioritize mobile-first patterns, performance, and cross-platform compatibility.
 

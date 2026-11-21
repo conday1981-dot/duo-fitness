@@ -32,7 +32,8 @@
           "isIosBackgroundLocationEnabled": true
         }
       ],
-      "expo-asset"
+      "expo-asset",
+      "expo-sharing"
     ]
   }
 }

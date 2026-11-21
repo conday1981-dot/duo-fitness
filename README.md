@@ -2,7 +2,7 @@
 
 Private, local-first iPhone fitness app for two people. The design is in [`docs/design.md`](docs/design.md).
 
-Right now the app is the **phase 0 check app**: one screen that tests, on the real phone, what the design depends on.
+**v0.1** runs as an installable home-screen web app on Cloudflare and builds for iPhone from the same code. The older **phase 0 check app** (Settings → Diagnostics): one screen that tests, on the real phone, what the design depends on.
 
 | Check | What it tells us |
 |---|---|
@@ -10,6 +10,16 @@ Right now the app is the **phase 0 check app**: one screen that tests, on the re
 | 2. Apple Health | Whether HealthKit is granted after signing, and which apps (Fitdays?) write weight, body fat and other readings |
 | 3. Location for runs | Whether "Always" location can be granted, so runs keep tracking with the screen locked |
 | 4. Text recognition | Whether on-device text recognition (Apple Vision) reads numbers, as the Fitdays screenshot import needs |
+
+## Deploy to Cloudflare (web app + sync relay)
+
+```sh
+npm ci
+npm run build:web          # dist/: app, offline cache, text recognition files
+npx wrangler deploy        # Worker "duo": serves dist/ and /api/* (relay on D1 "duo-relay")
+```
+
+Lock it to your two email addresses with Cloudflare Access (Zero Trust → Access → Applications → Self-hosted → the duo hostname).
 
 ## Build an IPA (Codemagic)
 
